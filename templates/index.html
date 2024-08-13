@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cihazlar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Cihaz Yönetimi</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Device Name</th>
+                    <th>IP Host</th>
+                    <th>Port</th>
+                    <th>Commands</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr id="{{ device.deviceName }}">
+                    <td>
+                        <span id="status-{{ device.deviceName }}" class="status-indicator"></span>
+                    </td>
+                    <td>{{ device.deviceName }}</td>
+                    <td>{{ device.IPHost }}</td>
+                    <td>{{ device.port }}</td>
+                    <td>{{ device.commands | join(', ') }}</td>
+                    <td>
+                        <div class="edit_device">
+                            <a href="{{ url_for('edit_device', device_id=device['deviceName']) }}"><i id="edit-icon"
+                                    class="edit-icon">✏️</i></a>
+                        </div>
+                        <div class="delete_icon">
+                            <a href="" onclick="confirmDelete('{{ device.deviceName }}')"><i
+                                    class="delete-icon">🗑️</i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-device">
+            <a href="/add_device"><i id="add-icon" class="add-icon">➕</i></a>
+        </div>
+    </div>
+    <script>
+        function confirmDelete(deviceName) {
+            if (confirm("Emin misiniz? Bu cihazı silmek istiyor musunuz?")) {
+                fetch(`/delete_device/${deviceName}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to delete device');
+                    }
+                });
+            }
+        }
+
+        function updateStatus() {
+            fetch('/device_status')
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(device => {
+                        const statusElement = document.getElementById(`status-${device.deviceName}`);
+                        if (!statusElement) return;
+
+                        if (device.status === 'connected') {
+                            statusElement.classList.add('connected');
+                            statusElement.classList.remove('disconnected');
+                        } else {
+                            statusElement.classList.add('disconnected');
+                            statusElement.classList.remove('connected');
+                        }
+                    });
+                })
+                .catch(error => console.error('Status güncellenirken bir hata oluştu:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus();
+            setInterval(updateStatus, 10000); // 10 saniyede bir günceller
+        });
+
+        $('#add-icon').click(function () {
+            window.location.href = '/add_device';
+        });
+
+        function editDevice(deviceName) {
+            const row = document.getElementById(deviceName);
+            const cells = row.getElementsByTagName('td');
+
+            cells[0].innerHTML = `<input type="text" value="${cells[0].innerText}" id="editDeviceName" />`;
+            cells[1].innerHTML = `<input type="text" value="${cells[1].innerText}" id="editIPHost" />`;
+            cells[2].innerHTML = `<input type="text" value="${cells[2].innerText}" id="editPort" />`;
+            cells[3].innerHTML = `<input type="text" value="${cells[3].innerText}" id="editCommands" />`;
+            cells[4].innerHTML = `<button onclick="saveDevice('${deviceName}')">Kaydet</button>`;
+        }
+
+        function saveDevice(deviceName) {
+            const newDeviceName = document.getElementById('editDeviceName').value;
+            const newIPHost = document.getElementById('editIPHost').value;
+            const newPort = document.getElementById('editPort').value;
+            const newCommands = document.getElementById('editCommands').value;
+
+            fetch(`/edit_device_inline/${deviceName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    deviceName: newDeviceName,
+                    IPHost: newIPHost,
+                    port: newPort,
+                    commands: newCommands
+                })
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to update device');
+                }
+            });
+        }
+
+        function confirmDelete(deviceName) {
+            if (confirm('Bu cihazı silmek istediğinize emin misiniz?')) {
+                fetch(`/delete_device/${deviceName}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Silme işlemi başarısız oldu.');
+                    }
+                });
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

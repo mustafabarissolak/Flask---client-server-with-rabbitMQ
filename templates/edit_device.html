@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Cihazları Düzenle{% endblock %}
+
+{% block content %}
+<main>
+    <h2 style="text-align: center;">Cihazları Düzenle</h2>
+    <form method="POST" action="{{ url_for('edit_device', device_id=device['deviceName']) }}">
+        <div>
+            <label for="deviceName">Cihaz Adı:</label>
+            <input type="text" id="deviceName" name="deviceName" value="{{ device['deviceName'] }}" required>
+        </div>
+        <div>
+            <label for="IPHost">IP Host:</label>
+            <input type="text" id="IPHost" name="IPHost" value="{{ device['IPHost'] }}" required>
+        </div>
+        <div>
+            <label for="port">Port:</label>
+            <input type="text" id="port" name="port" value="{{ device['port'] }}" required>
+        </div>
+        <div>
+            <label for="commands">Komutlar (virgülle ayrılmış):</label>
+            <input type="text" id="commands" name="commands" value="{{ device['commands'] | join(', ') }}" required>
+        </div>
+        <button type="submit">Güncelle</button>
+        <a href="{{ url_for('index') }}"><button type="button">Geri</button></a>
+    </form>
+</main>
+{% endblock %}

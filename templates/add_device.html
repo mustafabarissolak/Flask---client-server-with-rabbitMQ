@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block title %}Yeni Cihaz Ekle{% endblock %}
+
+{% block content %}
+<main>
+    <h2 style="text-align: center;">Yeni Cihaz Ekle</h2>
+    <form method="POST" action="{{ url_for('add_device') }}">
+        <div>
+            <label for="deviceName">Cihaz Adı:</label>
+            <input type="text" id="deviceName" name="deviceName" required>
+        </div>
+        <div>
+            <label for="IPHost">IP Host:</label>
+            <input type="text" id="IPHost" name="IPHost" required>
+        </div>
+        <div>
+            <label for="port">Port:</label>
+            <input type="text" id="port" name="port" required>
+        </div>
+        <div>
+            <label for="commands">Komutlar (virgülle ayrılmış):</label>
+            <input type="text" id="commands" name="commands" required>
+        </div>
+        <button type="submit">Ekle</button>
+        <!-- <a href="{{ url_for('index') }}"><button type="submit">ekle</button></a> -->
+        <a href="{{ url_for('index') }}"><button type="button">Geri</button></a>
+    </form>
+</main>
+{% endblock %}
